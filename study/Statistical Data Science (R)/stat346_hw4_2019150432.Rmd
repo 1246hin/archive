@@ -1,0 +1,204 @@
+---
+title: |
+  | \LARGE Homework assignment #4
+author: |
+  | \large \rm 2019150432 임효진
+date: |
+  | \rm \today
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+mainfont: NanumBarunGothic
+fontsize: 11pt
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	fig.align = "center",
+	fig.height = 4,
+	fig.width = 5,
+	message = FALSE,
+	warning = FALSE,
+	out.width = "50%"
+)
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+```
+
+# 1
+
+```{r}
+library(tidyverse)
+library(tidyr)
+df=data.frame("ID"=c(1, 2, 3, 4),
+              "grp"=c("A", "A", "B", "B"),
+              "sex"=c("F", "M", "F", "M"),
+              "meanL"=c(0.22, 0.47, 0.33, 0.55),
+              "sdL"=c(0.11, 0.33, 0.11, 0.31),
+              "meanR"=c(0.34, 0.57, 0.40, 0.65),
+              "sdR"=c(0.08, 0.33, 0.07, 0.27))
+
+df %>% gather(measure, value, 4:7) %>% 
+    mutate(measure=paste(sex,".",measure),
+           ID=ifelse(grp=="A", 1, 2)) %>% 
+    select(ID, measure, value) %>% 
+    spread(measure, value)
+    
+```
+
+# 2
+## (a)
+```{r}
+library(mosaicData)
+library(lubridate)
+packageVersion("mosaicData")
+Marriage %>% select(dob) %>%
+    filter(year(dob)>=2000)
+```
+The variable dob corresponds to the date of the person. However there are values that don't make sense since the year should start with 19.
+
+## (b)
+```{r}
+Marriage %>% select(dob) %>% 
+    mutate(year=ifelse(year(dob)>=2000, 
+                      year(dob)-100, year(dob)),
+           month=month(dob),
+           day=day(dob)) %>%
+    unite(dob, year, month, day, sep = "-") %>% 
+    mutate(dob=as.Date(dob)) %>% 
+    arrange(dob) %>% 
+    head(10)
+```
+
+# 3
+## (a)
+```{r}
+library(readxl)
+data=read_excel("~/Desktop/data/China-Global-Investment-Tracker-2019-Spring-FINAL.xlsx",
+                skip = 5)
+colnames(data) <- data %>% colnames() %>%
+    str_replace_all(" ","_") %>% str_to_lower()
+glimpse(data)
+
+df1=data %>% group_by(region) %>% 
+    select(region, country) %>% 
+    summarise(count=n_distinct(country))
+
+sum(df1$count)
+n_distinct(data$country)
+identical(sum(df1$count), n_distinct(data$country))
+# There is one country beloning to 2 regions.
+
+data %>% group_by(country) %>% 
+    summarise(count=n_distinct(region)) %>% 
+    filter(count==2)
+data %>% select(country, region) %>% 
+    filter(country=="Indonesia") %>% 
+    distinct(region)
+# Indonesia belongs to 2 regions which are East Asia and West Asia
+```
+
+## (b)
+```{r}
+tab=xtabs(quantity_in_millions~sector+region, 
+          data) %>%
+    prop.table(2) %>% round(3)
+colnames(tab)=c("Arb&N.Afrc", "Astrl", 
+                "E.Asia", "Erp", "N.Amrc", 
+                "S.Amrc", "SS Afrc",
+                "USA", "W.Asia")
+tab
+apply(tab, 2, which.max)
+#Energy sector recieves the most investent.
+```
+Although sector energy which corresponds to the index 3 most commonly recieves the shares there are exceptions in Europe and USA.
+
+## (c)
+```{r}
+tab1=data %>% group_by(sector) %>% 
+    summarise(mean=mean(quantity_in_millions),
+              sd=sd(quantity_in_millions))
+tab1 %>% arrange(mean)
+
+tab2=data %>% group_by(sector) %>% 
+    summarise(mean=mean(log10(quantity_in_millions)),
+              sd=sd(log10(quantity_in_millions)))
+tab2 %>% arrange(mean)
+
+plot(tab1$mean, tab1$sd)
+cor(tab1$mean, tab1$sd)
+
+plot(tab2$mean, tab2$sd)
+cor(tab2$mean, tab2$sd)
+```
+There seems to be a positive relation between the mean and the standard deviation. However thr chemical sector tends to hve a lower standard deviation compared to its mean.
+
+## (d)
+```{r}
+tab3=xtabs(quantity_in_millions~year+sector, data)
+```
+Except for 2007, energy sector contributed most in both 2005~2012 and 2013~2015. However in 2013~2015 the contribution proportion of energy decreased noticeably and the amount of investment in sectors of finance, transport, and technology increased.
+
+# 4
+## (a)
+```{r}
+mort=read_csv("http://johnmuschelli.com/intro_to_r/data/indicatordeadkids35.csv")
+mort %>% rename("country"=X1)
+year=as.integer(colnames(mort)[-1])
+```
+
+## (b)
+```{r}
+long=mort %>% rename("country"=X1) %>% 
+    gather(year, mortality, -country) %>% 
+    mutate(year=as.numeric(year))
+```
+
+## (c)
+```{r}
+pop=read_tsv("http://johnmuschelli.com/intro_to_r/data/country_pop.txt")
+pop=pop %>% rename("country"=colnames(pop[2]),
+           "percent"=colnames(pop[5]))
+```
+
+## (d)
+```{r}
+c1=pop %>% arrange(desc(Population))
+pop_levels=c1$country
+long=long %>% mutate(sorted=factor(country, 
+                             levels = pop_levels))
+```
+
+## (e)
+```{r}
+long_sub=long %>% 
+    filter(between(year, 1975, 2010),
+           sorted %in% c("Venezuela", "Bahrain",
+                         "Estonia", "Iran",
+                         "Thailand", "Chile",
+                         "Western Sahara",
+                         "Azerbaijan", 
+                         "Argentina", "Haiti"),
+           !is.na(mortality)) 
+```
+
+## (f)
+```{r}
+qplot(x=year, y=mortality, data=long_sub,
+      color=sorted, geom = "line")
+```
+
+```{r}
+long_sub %>% 
+    ggplot(aes(year, mortality, color=sorted))+
+    geom_line()
+```
+
