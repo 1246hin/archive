@@ -1,0 +1,168 @@
+---
+title: |
+  | \LARGE Homework 1
+author: |
+  | \large \rm 2019150432 임효진
+date: |
+  | \rm \today
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+mainfont: NanumBarunGothic
+fontsize: 11pt
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+# Q1
+## (a)
+
+```{r}
+x1=c(4, 12, 8, 10, 6, 8)
+x2=c(2, 3, 0, 2, 1, 4)
+x3=c(5, 9, 6, 8, 6, 2)
+
+tab1=cbind(x1, x2, x3)
+x1=c(4, 12, 8, 10, 6, 8)
+x2=c(2, 3, 0, 2, 1, 4)
+x3=c(5, 9, 6, 8, 6, 2)
+
+# sample mean vector
+tab1=cbind(x1, x2, x3)
+meanVec1=mean(x1)
+meanVec2=mean(x2)
+meanVec3=mean(x3)
+c(meanVec1, meanVec2, meanVec3)
+
+# sample covariance matrix S
+cov(tab1)
+```
+
+## (b)
+```{r}
+cor(tab1)
+```
+
+## (c)
+```{r}
+z1=-x1+3*x2-2*x3
+mean(z1)
+var(z1)
+```
+
+## (d)
+```{r}
+z2=5*x2-x3
+mean(z2)
+var(z2)
+```
+
+## (e)
+```{r}
+z3=-x1+x3
+mean(z3)
+var(z3)
+```
+
+## (f)
+```{r}
+z=data.frame(z1,z2,z3)
+z=as.matrix(z)
+zt=t(z)
+cov(zt)
+```
+
+# Q2
+## (a)
+```{r}
+dat1=read.table("./usair.dat", header = T)
+
+colMeans(dat1)
+cov(dat1)
+```
+
+##(b)
+```{r}
+cor(dat1)
+```
+
+## (c)
+```{r}
+for(i in 1:ncol(dat1)){qqnorm(dat1[,i], 
+                     xlab="Quantiles of Standard Normal",
+                     ylab=colnames(dat1)[i]) 
+                     qqline(dat1[,i])
+}
+
+apply(dat1, 2, shapiro.test)
+```
+
+When applying Shapiro-Wilk normality test, we can observe that except for variable Wind and Days other variables don't hold the normal distribution assumption.
+
+## (d)
+```{r}
+Sx = cov(dat1)
+di2=mahalanobis(dat1, colMeans(dat1), Sx)
+di2
+```
+
+## (e)
+```{r}
+library(lattice) 
+qqmath(di2, distribution = function(p) qchisq(p,df=7), 
+     panel = function(x, ...) {
+         panel.qqmathline(x, ...)
+         panel.qqmath(x, ...)
+       })
+```
+As we can observe from the chi-square plot of the generalized distance, the Mahalanobis distances don't resemble a straight and have outliers. This implies that the data don't arise from multivariate normal distribution. 
+
+## (f)
+```{r}
+library(forecast)
+lambda=BoxCox.lambda(dat1$SO2, method = "loglik")
+new_var=BoxCox(dat1$SO2, lambda)
+qqnorm(new_var)
+qqline(new_var)
+shapiro.test(new_var)
+```
+
+```{r}
+lambda=BoxCox.lambda(dat1$TEMP, method = "loglik")
+new_var=BoxCox(dat1$TEMP, lambda)
+qqnorm(new_var)
+qqline(new_var)
+shapiro.test(new_var)
+```
+
+```{r}
+lambda=BoxCox.lambda(dat1$MANUF, method = "loglik")
+new_var=BoxCox(dat1$MANUF, lambda)
+qqnorm(new_var)
+qqline(new_var)
+shapiro.test(new_var)
+```
+
+```{r}
+lambda=BoxCox.lambda(dat1$POP, method = "loglik")
+new_var=BoxCox(dat1$POP, lambda)
+qqnorm(new_var)
+qqline(new_var)
+shapiro.test(new_var)
+```
+
+```{r}
+lambda=BoxCox.lambda(dat1$PRECIP, method = "loglik")
+new_var=BoxCox(dat1$PRECIP, lambda)
+qqnorm(new_var)
+qqline(new_var)
+shapiro.test(new_var)
+```
+
+By transforming each variable with Box-Cox transformation with the optimal lambda, we could derive a p-value bigger than 0.05 when implementing Shapiro-Wilk normality test. This implies the null hypotheis which indicates that the noramlization assumption holds cannot be rejected.
