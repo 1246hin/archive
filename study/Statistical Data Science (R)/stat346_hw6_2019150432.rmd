@@ -1,0 +1,259 @@
+---
+title: |
+  | \LARGE Homework 6
+author: |
+  | \large \rm 2019150432 임효진
+date: |
+  | \rm \today
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+mainfont: NanumBarunGothic
+fontsize: 11pt
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	fig.align = "center",
+	fig.height = 4,
+	fig.width = 5,
+	message = FALSE,
+	warning = FALSE,
+	out.width = "50%"
+)
+```
+# 1
+## (a)
+```{r}
+library(ISLR)
+library(tidyverse)
+head(Default)
+
+glm_fit=glm(default~income+balance, data = Default, 
+            family = "binomial")
+glm_fit
+```
+
+## (b)
+```{r}
+library(caret)
+test_index=createDataPartition(Default$default, times=1, 
+                               p=0.5, list = F)
+train_set=Default %>% slice(-test_index)
+val_set=Default %>% slice(test_index)
+```
+
+```{r}
+glm_fit=mutate(train_set, 
+               default=as.numeric(default=="Yes")) %>% 
+    glm(default~income+balance, data=., family = "binomial")
+
+glm_fit
+```
+
+```{r}
+p_hat=predict(glm_fit, val_set, type="response")
+y_hat=ifelse(p_hat>0.5, "Yes", "No") %>% factor()
+```
+
+```{r}
+mean(y_hat!=val_set$default)
+```
+
+## (c)
+```{r}
+test_index=createDataPartition(Default$default, times=1, 
+                               p=0.5, list = F)
+train_set=Default %>% slice(-test_index)
+val_set=Default %>% slice(test_index)
+glm_fit=mutate(train_set, 
+               default=as.numeric(default=="Yes")) %>% 
+    glm(default~income+balance, data=., family = "binomial")
+p_hat=predict(glm_fit, val_set, type="response")
+y_hat=ifelse(p_hat>0.5, "Yes", "No") %>% factor()
+mean(y_hat!=val_set$default)
+```
+
+```{r}
+test_index=createDataPartition(Default$default, times=1, 
+                               p=0.5, list = F)
+train_set=Default %>% slice(-test_index)
+val_set=Default %>% slice(test_index)
+glm_fit=mutate(train_set, 
+               default=as.numeric(default=="Yes")) %>% 
+    glm(default~income+balance, data=., family = "binomial")
+p_hat=predict(glm_fit, val_set, type="response")
+y_hat=ifelse(p_hat>0.5, "Yes", "No") %>% factor()
+mean(y_hat!=val_set$default)
+```
+
+```{r}
+test_index=createDataPartition(Default$default, times=1, 
+                               p=0.5, list = F)
+train_set=Default %>% slice(-test_index)
+val_set=Default %>% slice(test_index)
+glm_fit=mutate(train_set, 
+               default=as.numeric(default=="Yes")) %>% 
+    glm(default~income+balance, data=., family = "binomial")
+p_hat=predict(glm_fit, val_set, type="response")
+y_hat=ifelse(p_hat>0.5, "Yes", "No") %>% factor()
+mean(y_hat!=val_set$default)
+```
+
+## (d)
+```{r}
+test_index=createDataPartition(Default$default, times=1, 
+                               p=0.5, list = F)
+train_set=Default %>% slice(-test_index)
+val_set=Default %>% slice(test_index)
+glm_fit=mutate(train_set, 
+               default=as.numeric(default=="Yes")) %>% 
+    glm(default~income+balance+student, 
+        data=., family = "binomial")
+p_hat=predict(glm_fit, val_set, type="response")
+y_hat=ifelse(p_hat>0.5, "Yes", "No") %>% factor()
+mean(y_hat!=val_set$default)
+```
+There doesn't seem to be a reduction of test error when the student variable was added.
+
+# 2
+## (a)
+```{r}
+set.seed(1)
+glm_fit=glm(default~income+balance, data=Default,
+            family="binomial")
+summary(glm_fit)
+```
+
+## (b)
+```{r}
+boot.fn=function(data, index){
+    glm_fit=glm(default~income+balance, data=data, 
+                family = "binomial", subset=index)
+    return(coef(glm_fit))
+}
+```
+
+## (c)
+```{r}
+library(boot)
+boot(Default, boot.fn, 1000)
+```
+
+## (d)
+The estimated standard error by using glm() and boot() are similar.
+
+# 3
+## (1)
+```{r}
+library(tidyverse)
+library(purrr)
+library(pdftools)
+library(dslabs)
+library(lubridate)
+
+fn <- system.file("extdata", "RD-Mortality-Report_2015-18-180531.pdf",
+                  package="dslabs")
+dat <- map_df(str_split(pdf_text(fn), "\n"), function(s){
+  s <- str_trim(s)
+  header_index <- str_which(s, "2015")[1]
+  tmp <- str_split(s[header_index], "\\s+", simplify = TRUE)
+  month <- tmp[1]
+  header <- tmp[-1]
+  tail_index  <- str_which(s, "Total")
+  n <- str_count(s, "\\d+")
+  out <- c(1:header_index, which(n == 1), 
+           which(n >= 28), tail_index:length(s))
+  s[-out] %>%  str_remove_all("[^\\d\\s]") %>% str_trim() %>%
+    str_split_fixed("\\s+", n = 6) %>% .[,1:5] %>% as_tibble() %>% 
+    setNames(c("day", header)) %>%
+    mutate(month = month, day = as.numeric(day)) %>%
+    gather(year, deaths, -c(day, month)) %>%
+    mutate(deaths = as.numeric(deaths))
+}) %>%
+  mutate(month = recode(month, 
+                        "JAN" = 1, "FEB" = 2, "MAR" = 3, 
+                        "APR" = 4, "MAY" = 5, "JUN" = 6, 
+                        "JUL" = 7, "AGO" = 8, "SEP" = 9, 
+                        "OCT" = 10, "NOV" = 11, "DEC" = 12)) %>%
+  mutate(date = make_date(year, month, day)) %>%
+  filter(date <= "2018-05-01")
+any(is.na(dat))
+dat=dat[!is.na(dat$deaths), ]
+```
+
+```{r}
+total_days=diff(range(as.numeric(dat$date)))
+span=62/total_days
+fit=loess(deaths~as.numeric(dat$date), degree = 1, span = span, 
+          data=dat)
+dat %>% mutate(smooth=fit$fitted) %>% 
+    ggplot(aes(as.numeric(date), deaths))+
+    geom_point(size=3, alpha=.5, color="grey")+
+    geom_line(aes(as.numeric(date), smooth), color="red")
+```
+
+## (2)
+```{r}
+dat %>% mutate(smooth=fit$fitted, day=yday(date)) %>% 
+    ggplot(aes(day, smooth, col=year))+
+    geom_line()
+```
+
+# 4
+## (1)
+```{r}
+set.seed(1993)
+data("tissue_gene_expression")
+tissues <- c("cerebellum", "hippocampus")
+ind <- which(tissue_gene_expression$y %in% tissues)
+y <- droplevels(tissue_gene_expression$y[ind])
+x <- tissue_gene_expression$x[ind, ]
+x <- x[, sample(ncol(x), 10)]
+```
+
+```{r}
+train_lda=train(x, y, method="lda", data=x)
+train_lda
+```
+
+## (2)
+```{r}
+train_lda$finalModel
+means=data.frame(t(train_lda$finalModel$means))
+means %>% mutate(genes=row.names(means)) %>% 
+    ggplot(aes(cerebellum, hippocampus, col=genes))+
+    geom_point()+
+    geom_text(aes(label=genes), size=2, nudge_y = .3)
+```
+Genes PPME1 and VOPP1 seem to drive the algorithm.
+
+## (3)
+```{r}
+set.seed(1993)
+data("tissue_gene_expression")
+ind <- which(tissue_gene_expression$y %in% c("cerebellum", "hippocampus"))
+y <- droplevels(tissue_gene_expression$y[ind])
+x <- tissue_gene_expression$x[ind, ]
+x <- x[, sample(ncol(x), 10)]
+
+train_qda=train(x,y,method="qda", data = x)
+train_qda
+```
+The accuracy is lower than LDA.
+
+##(4)
+```{r}
+means=data.frame(t(train_qda$finalModel$means))
+means %>% mutate(genes=row.names(means)) %>% 
+    ggplot(aes(cerebellum, hippocampus, col=genes))+
+    geom_point()+
+    geom_text(aes(label=genes), size=2, nudge_y = .3)
+
+```
+The same genes in LDA are driving the algorithm in QDA too.
