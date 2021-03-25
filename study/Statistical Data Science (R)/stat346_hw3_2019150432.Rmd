@@ -1,0 +1,255 @@
+---
+title: |
+  | \LARGE HW 3
+author: |
+  | \large \rm 2019150432 임효진
+date: |
+  | \rm \today
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+mainfont: NanumBarunGothic
+fontsize: 11pt
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=5, fig.height=4, fig.align ="center", out.width = "50%", warning=FALSE, message=FALSE) # global options
+```
+
+# 1
+```{r}
+library(macleish)
+library(ggplot2)
+library(dplyr)
+head(whately_2015)
+
+whately_2015%>%ggplot(aes(x=when, y=temperature))+
+    geom_line()+
+    xlab("Time")+
+    ylab("Temperature")
+```
+
+# 2
+## (a)
+```{r}
+library(nasaweather)
+head(storms)
+
+storms%>%ggplot(aes(wind, pressure))+
+    geom_point(aes(col=type))
+```
+
+## (b)
+```{r}
+storms%>%filter(type=="Tropical Storm")%>%
+    ggplot(aes(lat, long))+
+    geom_path(aes(col=name))+
+    facet_wrap(~year)
+```
+
+# 3
+## (a)
+```{r}
+prob_win <- function(p){
+B <- 10000
+result <- replicate(B, {
+b_win <- sample(c(1,0), 7, replace = TRUE, prob = c(1-p, p))
+sum(b_win)>=4
+})
+mean(result)
+}
+
+Pr=sapply(seq(0.5, 0.95, 0.025), prob_win)
+df=data.frame(p=seq(0.5, 0.95, 0.025), Pr)
+df %>% ggplot(aes(p, Pr))+
+  geom_point()
+```
+## (b)
+```{r}
+prob_win <- function(N, p=0.75){
+B <- 10000
+result <- replicate(B, {
+b_win <- sample(c(1,0), N, replace = TRUE, prob = c(1-p, p))
+sum(b_win)>=(N+1)/2
+})
+mean(result)
+}
+
+sapply(seq(1, 25, 2), prob_win)
+```
+
+# 4
+## (1)
+```{r}
+library(dslabs)
+data("polls_us_election_2016")
+polls <- polls_us_election_2016 %>% 
+  filter(enddate >= "2016-10-31" & state == "U.S.") 
+N <- polls$samplesize[1]
+x_hat=polls$rawpoll_clinton[1]/100
+se_hat=sqrt(x_hat*(1-x_hat)/N)
+x_hat+c(-1, 1)*qnorm(1-0.025)*se_hat
+```
+
+## (2)
+```{r}
+polls %>% mutate(x_hat=polls$rawpoll_clinton/100,
+                 se_hat=sqrt(x_hat*(1-x_hat)/N),
+                 lower=x_hat-qnorm(1-0.025)*se_hat,
+                 upper=x_hat+qnorm(1-0.025)*se_hat)%>%
+  select(pollster, enddate, x_hat, lower, upper)
+```
+
+## (3)
+```{r}
+polls %>% mutate(x_hat=polls$rawpoll_clinton/100,
+                 se_hat=sqrt(x_hat*(1-x_hat)/N),
+                 lower=x_hat-qnorm(1-0.025)*se_hat,
+                 upper=x_hat+qnorm(1-0.025)*se_hat,
+                 hit=0.482>=lower&0.482<=upper)%>%
+  select(pollster, enddate, x_hat, lower, upper, hit)
+
+```
+
+## (4)
+```{r}
+polls1=polls %>% mutate(x_hat=polls$rawpoll_clinton/100,
+                 se_hat=sqrt(x_hat*(1-x_hat)/N),
+                 lower=x_hat-qnorm(1-0.025)*se_hat,
+                 upper=x_hat+qnorm(1-0.025)*se_hat,
+                 hit=0.482>=lower&0.482<=upper)%>%
+  select(pollster, enddate, x_hat, lower, upper, hit)
+
+polls1%>%summarise(mean(hit))
+```
+
+## (5)
+```{r}
+# 0.95
+```
+
+## (6)
+```{r}
+polls <- polls_us_election_2016 %>% 
+  filter(enddate >= "2016-10-31" & state == "U.S.")  %>%
+  mutate(d_hat = rawpoll_clinton / 100 - rawpoll_trump / 100)
+
+N <- polls$samplesize[1]
+d_hat <- polls$d_hat[1]
+x_hat <- (d_hat+1)/2
+se_hat <- 2*sqrt(x_hat*(1-x_hat)/N)
+d_hat + c(-1,1)*qnorm(0.975)*se_hat
+```
+
+# 5
+## (1)
+```{r}
+library(HistData)
+library(tidyr)
+library(broom)
+data("GaltonFamilies")
+set.seed(1)
+galton_heights <- GaltonFamilies %>%
+  group_by(family, gender) %>%
+  sample_n(1) %>%
+  ungroup()
+galton_heights%>%
+  gather(parent, parentHeight, 'father':'mother') %>%
+  mutate(child = ifelse(gender == "female", "daughter", "son"))%>%
+  group_by(parent, child)%>%
+  do(tidy(lm(childHeight~parentHeight, data=.)))
+```
+
+## (2)
+```{r}
+galton_heights%>%
+  gather(parent, parentHeight, 'father':'mother') %>%
+  mutate(child = ifelse(gender == "female", "daughter", "son"))%>%
+  group_by(parent, child)%>%
+  do(tidy(lm(childHeight~parentHeight, data=.), conf.int=T))
+
+```
+
+## (3)
+```{r}
+galton_heights%>%
+  gather(parent, parentHeight, 'father':'mother') %>%
+  mutate(child = ifelse(gender == "female", "daughter", "son"))%>%
+  unite(pair, c("parent", "child")) %>% 
+  group_by(pair) %>%
+  do(tidy(lm(childHeight~parentHeight, data=.), conf.int=T))%>%
+  filter(term=="parentHeight")%>%
+  ggplot(aes(x=pair, y=estimate, ymin=conf.low,
+             ymax=conf.high))+
+  geom_errorbar()+
+  geom_point()
+
+```
+
+# 6
+## (1)
+```{r}
+dat=research_funding_rates%>%
+    rename(success_total=success_rates_total, 
+           success_men=success_rates_men,
+           success_women=success_rates_women)%>%
+    gather(key, value, -discipline)%>%
+    separate(key, into = c("status", "gender"))%>%
+    spread(status, value)%>%
+    filter(gender!="total")
+dat%>%group_by(gender) %>% 
+  summarise(total_award=sum(awards),
+            not_award=sum(applications)-sum(total_award))
+```
+
+## (2)
+```{r}
+dat2=dat%>%group_by(gender) %>% 
+  summarise(total_award=sum(awards),
+            not_award=sum(applications)-sum(total_award))
+dat2%>%group_by(gender)%>%
+  summarise(diff=total_award/(total_award+not_award))
+```
+
+## (3)
+```{r}
+dat2%>%select(-gender) %>% 
+  do(tidy(chisq.test(.)))
+```
+
+## (4)
+```{r}
+research_funding_rates%>%
+  mutate(discipline=reorder(discipline, success_rates_total))%>%
+  rename(success_total=success_rates_total, 
+           success_men=success_rates_men,
+           success_women=success_rates_women)%>%
+  gather(key, value, -discipline)%>%
+  separate(key, into = c("status", "gender"))%>%
+  spread(status, value)%>%
+  filter(gender!="total")
+
+```
+
+## (5)
+```{r}
+research_funding_rates%>%
+  mutate(discipline=reorder(discipline, success_rates_total))%>%
+  rename(success_total=success_rates_total, 
+           success_men=success_rates_men,
+           success_women=success_rates_women)%>%
+  gather(key, value, -discipline)%>%
+  separate(key, into = c("status", "gender"))%>%
+  spread(status, value)%>%
+  filter(gender!="total")%>%
+  ggplot(aes(discipline, success, 
+             size=applications, color=gender))+
+  geom_point()+
+  theme(axis.text.x = element_text(angle=90, vjust = 1))
+
+```
+
