@@ -1,0 +1,296 @@
+---
+title: |
+  | \LARGE Homework #2
+author: |
+  | \large \rm 2019150432 임효진
+date: |
+  | \rm \today
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+mainfont: NanumBarunGothic
+fontsize: 11pt
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=5, fig.height=4, fig.align ="center", out.width = "50%", warning=FALSE, message=FALSE) # global options
+```
+
+# 1
+## (a)
+```{r}
+library("gapminder")
+library(dplyr)
+gapminder%>%group_by(continent)%>%
+    summarize(country_num=n_distinct(country))
+```
+
+## (b)
+```{r}
+gapminder%>%filter(continent=="Europe", 
+                   year==1997)%>%
+    arrange(gdpPercap)%>%
+    head(n=1)
+```
+
+```{r}
+gapminder%>%filter(continent=="Europe", 
+                   year==2007)%>%
+    arrange(gdpPercap)%>%
+    head(n=1)
+```
+
+## (c)
+```{r}
+gapminder%>%filter(between(year, 1980, 1989))%>%
+    group_by(continent)%>%
+    summarize(avg_life_expectancy=mean(lifeExp))
+```
+
+## (d)
+```{r}
+gapminder%>%mutate(GDP=gdpPercap*pop)%>%
+  group_by(country)%>%
+  summarize(GDP=sum(GDP))%>%
+  arrange(desc(GDP))%>%
+  head(5)
+```
+
+## (e)
+```{r}
+gapminder%>%select(country, lifeExp, year)%>%
+  filter(lifeExp>=80)
+```
+
+## (f)
+```{r}
+gapminder%>%group_by(country)%>%
+  summarize(cor=cor(lifeExp, gdpPercap))%>%
+  arrange(desc(abs(cor)))%>%
+  head(10)
+```
+
+## (g)
+```{r}
+gapminder%>%filter(continent!="Asia")%>%
+  group_by(continent, year)%>%
+  summarize(average_population=mean(pop))%>%
+  arrange(desc(average_population))%>%
+  head(1)
+```
+
+## (h)
+```{r}
+gapminder%>%group_by(country)%>%
+  summarize(sd=sd(pop))%>%
+  arrange(sd)%>%
+  head(3)
+```
+
+# 2
+## (a)
+```{r}
+library("nycflights13")
+data("flights")
+data(planes)
+data(weather)
+
+flights%>%mutate(canceled=ifelse(is.na(air_time), 1, 0))%>%
+  group_by(month)%>%
+  summarize(canceled_proportion=sum(canceled)/n())%>%
+  arrange(canceled_proportion)%>%
+  head(1)
+```
+
+```{r}
+flights%>%mutate(canceled=ifelse(is.na(air_time), 1, 0))%>%
+  group_by(month)%>%
+  summarize(canceled_proportion=sum(canceled)/n())%>%
+  arrange(desc(canceled_proportion))%>%
+  head(1)
+```
+
+```{r}
+library(ggplot2)
+canceled_data=flights%>%
+  mutate(canceled=ifelse(is.na(air_time), 1, 0))%>%
+  group_by(month)%>%
+  summarize(canceled_proportion=sum(canceled)/n())
+canceled_data%>%ggplot(aes(month, canceled_proportion))+
+  geom_line()+scale_x_continuous(breaks = seq(1, 12))
+```
+ We can interpret that winter and summer has a high cancel
+ proprotion compared to spring and autumn.
+
+## (b)
+```{r}
+flights%>%filter(!is.na(tailnum))%>%
+  group_by(tailnum)%>%
+  summarize(count=n())%>%
+  arrange(desc(count))%>%
+  head(1)
+```
+
+```{r}
+library(lubridate)
+
+flights%>%filter(tailnum=="N725MQ")%>%
+  mutate(week=week(time_hour))%>%
+  group_by(week)%>%
+  summarize(count=n())%>%
+  ggplot(aes(week, count))+
+  geom_line()
+```
+
+## (c)
+```{r}
+planes%>%inner_join(flights, by='tailnum')%>%
+  group_by(tailnum)%>%
+  arrange(year.y)%>%
+  select(tailnum, year.y)%>%
+  head(1)
+```
+
+```{r}
+planes%>%inner_join(flights, by='tailnum')%>%
+  select(tailnum)%>%
+  n_distinct()
+```
+
+## (d)
+```{r}
+planes%>%group_by(tailnum)%>%
+  filter(is.na(manufacturer)==T)
+```
+
+```{r}
+planes%>%group_by(manufacturer)%>%
+  summarize(count=n())%>%
+  arrange(desc(count))%>%
+  head(5)
+```
+
+```{r}
+planes%>%inner_join(flights, by='tailnum')%>%
+  mutate(top5_manu=
+                  ifelse(manufacturer%in%c("BOEING", 
+                                           "AIRBUS INDUSTRIE",
+                                           "BOMBARDIER INC",
+                                           "AIRBUS",
+                                           "EMBRAER"), 
+                         manufacturer, "Other"))%>%
+  group_by(year.x, top5_manu)%>%
+  summarize(num_manu=n())%>%
+  ggplot(aes(year.x, num_manu, fill=top5_manu))+
+  geom_bar(stat = "identity")
+  
+```
+
+ The minor manufacturer companies are no seldom seen after the year of 2000. Therfore we can conclude that the distribution of the manufacturers changed as time went by.
+
+## (e)
+```{r}
+weather%>%filter(month==7)%>%
+  group_by(day)%>%
+  summarize(mean_temp=mean(temp))%>%
+  ggplot(aes(day, mean_temp))+
+  geom_line()
+```
+
+```{r}
+boxplot(weather$wind_speed)
+boxplot.stats(weather$wind_speed)$out%>%head(10)
+# There seems to be a lot of outliers.
+which.max(weather$wind_speed)
+weather[1010, ]%>%select(wind_speed)
+# The most extreme outlier is in row 1010, with value 1048.361
+```
+
+```{r}
+plot(weather$dewp, weather$humid)
+cor(weather$dewp, weather$humid,  use="complete.obs")
+plot(weather$precip, weather$visib)
+cor(weather$precip, weather$visib,  use="complete.obs")
+```
+
+ The former seems to have a positive correlation while the latter seems to have little correlation.
+
+## (f)
+```{r}
+weather%>%group_by(month, day)%>%
+  summarize(count=sum(precip))%>%
+  filter(!count==0)%>%
+  nrow()
+```
+
+```{r}
+weather%>%mutate(weekday=weekdays.POSIXt(time_hour))%>%
+  group_by(weekday)%>%
+  select(visib, weekday)%>%
+  summarize(avg_visib=mean(visib))
+
+weather%>%group_by(month)%>%
+  summarize(avg_visib=mean(visib))
+```
+ The diffrence between the days of the week and month is insignificant.
+ 
+# 3
+## (a)
+```{r}
+data("diamonds")
+hist(diamonds$carat, col = "steelblue")
+```
+
+## (b)
+```{r}
+qplot(depth, data=diamonds)+xlim(50, 75)
+```
+
+## (c)
+```{r}
+qplot(cut, price, data=diamonds, geom="violin", fill=cut)
+```
+
+# 4
+## (a)
+```{r}
+library(MASS)
+data("Cars93")
+as_tibble(Cars93)
+
+Cars93%>%ggplot(aes(MPG.highway, Price, size=Horsepower))+
+  geom_point(aes(color=Horsepower))
+```
+
+## (b)
+```{r}
+Cars93%>%ggplot(aes(MPG.highway, Price, size=Horsepower))+
+  geom_point(aes(color=Origin))
+
+```
+
+## (c)
+```{r}
+Cars93%>%ggplot(aes(MPG.highway, Price, size=Horsepower))+
+  geom_point(aes(color=Origin))+
+  stat_smooth()
+```
+
+## (d)
+```{r}
+Cars93%>%ggplot(aes(MPG.highway, Price, size=Horsepower))+
+  geom_point(aes(color=Origin))+
+  facet_grid(~Origin)
+```
+
+## (e)
+```{r}
+Cars93%>%ggplot(aes(MPG.highway, Price, size=Horsepower))+
+  geom_point(aes(color=Origin))+
+  facet_grid(~Origin)+
+  geom_smooth(method="lm")
+```
