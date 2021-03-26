@@ -26,8 +26,13 @@ class Polynomial
 {
 public:
 	// Default constructor p(x) = 0
-	Polynomial();
-
+	Polynomial()
+	{
+		capacity = 10;
+		terms = 0;
+		termArray = new Term[capacity];
+	};
+	
 	// Copy constructor
 	Polynomial(const Polynomial& source);
 
@@ -59,20 +64,24 @@ public:
 	// Print polynomial
 	void Print()
 	{
-		for(int i=0; i<terms; i++)
+		if(terms == 0) std::cout << "0" << std::endl;
+		else
 		{
-			float c = termArray[i].coef;
-			int e = termArray[i].exp;
-						
-			if(c > 0 && i > 0)
+			for(int i=0; i<terms; i++)
 			{
-				std::cout << "+";
+				float c = termArray[i].coef;
+				int e = termArray[i].exp;
+							
+				if(c > 0 && i > 0)
+				{
+					std::cout << "+";
+				}
+				
+				std::cout << c;
+				if(e > 0) std::cout<<"x^"<<e;
 			}
-			
-			std::cout << c;
-			if(e > 0) std::cout<<"x^"<<e;
+			std::cout << std::endl;
 		}
-		std::cout << std::endl;
 	}
 	
 	int Capacity() const { return capacity; }
