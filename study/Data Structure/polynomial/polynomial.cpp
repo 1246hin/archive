@@ -7,13 +7,6 @@
 // Implementation
 //
 
-// Default constructor p(x) = 0
-Polynomial::Polynomial(){
-	capacity=1;
-	terms=0;
-	termArray=new Term[capacity];
-}
-
 // Copy constructor
 Polynomial::Polynomial(const Polynomial& source){
 	capacity=source.capacity;
@@ -47,30 +40,30 @@ Polynomial& Polynomial::operator = (const Polynomial& source){
 Polynomial Polynomial::operator +(const Polynomial& source){
 	Polynomial c;
 
-	int aPos=0, bPos=0;
+	int ap=0, bp=0;
 	int at=this->terms, bt=source.terms;
-	while ((aPos<at)&&(bPos<bt)){
-		if (termArray[aPos].exp==source.termArray[bPos].exp){
-			float t=termArray[aPos].coef+source.termArray[bPos].coef;
-			if (t) {c.CreateTerm(t, termArray[aPos].exp);}
-			aPos++;
-			bPos++;
+	while ((ap<at)&&(bp<bt)){
+		if (termArray[ap].exp==source.termArray[bp].exp){
+			float t=termArray[ap].coef+source.termArray[bp].coef;
+			if (t) {c.CreateTerm(t, termArray[ap].exp);}
+			ap++;
+			bp++;
 		}
-		else if (termArray[aPos].exp<source.termArray[bPos].exp){
-			c.CreateTerm(source.termArray[bPos].coef, source.termArray[bPos].exp);
-			bPos++;
+		else if (termArray[ap].exp<source.termArray[bp].exp){
+			c.CreateTerm(source.termArray[bp].coef, source.termArray[bp].exp);
+			bp++;
 		}
 		else{
-			c.CreateTerm(termArray[aPos].coef, termArray[aPos].exp);
-			aPos++;
+			c.CreateTerm(termArray[ap].coef, termArray[ap].exp);
+			ap++;
 		}
 	}
 	
-	for(; aPos<at; aPos++){
-		c.CreateTerm(termArray[aPos].coef, termArray[aPos].exp);
+	for(; ap<at; ap++){
+		c.CreateTerm(termArray[ap].coef, termArray[ap].exp);
 	}
-	for(; bPos<bt; bPos++){
-		c.CreateTerm(source.termArray[bPos].coef, source.termArray[bPos].exp);
+	for(; bp<bt; bp++){
+		c.CreateTerm(source.termArray[bp].coef, source.termArray[bp].exp);
 	}
 	
 
@@ -81,30 +74,30 @@ Polynomial Polynomial::operator +(const Polynomial& source){
 Polynomial Polynomial::operator - (const Polynomial& source){
 	Polynomial c;
 
-	int aPos=0, bPos=0;
+	int ap=0, bp=0;
 	int at=this->terms, bt=source.terms;
-	while ((aPos<at)&&(bPos<bt)){
-		if (termArray[aPos].exp==source.termArray[bPos].exp){
-			float t=termArray[aPos].coef-source.termArray[bPos].coef;
-			if (t) {c.CreateTerm(t, termArray[aPos].exp);}
-			aPos++;
-			bPos++;
+	while ((ap<at)&&(bp<bt)){
+		if (termArray[ap].exp==source.termArray[bp].exp){
+			float t=termArray[ap].coef-source.termArray[bp].coef;
+			if (t) {c.CreateTerm(t, termArray[ap].exp);}
+			ap++;
+			bp++;
 		}
-		else if (termArray[aPos].exp<source.termArray[bPos].exp){
-			c.CreateTerm(-source.termArray[bPos].coef, source.termArray[bPos].exp);
-			bPos++;
+		else if (termArray[ap].exp<source.termArray[bp].exp){
+			c.CreateTerm(-source.termArray[bp].coef, source.termArray[bp].exp);
+			bp++;
 		}
 		else{
-			c.CreateTerm(termArray[aPos].coef, termArray[aPos].exp);
-			aPos++;
+			c.CreateTerm(termArray[ap].coef, termArray[ap].exp);
+			ap++;
 		}
 	}
 	
-	for(; aPos<at; aPos++){
-		c.CreateTerm(termArray[aPos].coef, termArray[aPos].exp);
+	for(; ap<at; ap++){
+		c.CreateTerm(termArray[ap].coef, termArray[ap].exp);
 	}
-	for(; bPos<bt; bPos++){
-		c.CreateTerm(-source.termArray[bPos].coef, source.termArray[bPos].exp);
+	for(; bp<bt; bp++){
+		c.CreateTerm(-source.termArray[bp].coef, source.termArray[bp].exp);
 	}
 	
 
@@ -119,10 +112,10 @@ Polynomial Polynomial::operator * (const Polynomial& source){
 	int at=terms, bt=source.terms;
 	for (int i=0; i<at; i++){
 		for (int j=0; j<bt; j++){
-			float t=termArray[i].coef*source.termArray[j].coef;
-			int k=termArray[i].exp+source.termArray[j].exp;
+			float k=termArray[i].coef*source.termArray[j].coef;
+			int l=termArray[i].exp+source.termArray[j].exp;
 			Polynomial temp;
-			temp.CreateTerm(t, k);
+			temp.CreateTerm(k, l);
 			c=c+temp;
 		}
 	}
