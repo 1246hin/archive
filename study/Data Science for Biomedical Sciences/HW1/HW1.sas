@@ -1,4 +1,4 @@
-/*2¹ø*/
+/*2ë²ˆ*/
 DATA df1;
 INPUT group x @@;
 CARDS;
@@ -11,7 +11,7 @@ CARDS;
 2 20.0 2 17.8 2 13.9 2 22.1 2 13.9 2 18.3 2 22.8 2 13.0 2 17.9 2 15.2
 2 17.7 2 15.1 2 16.9 2 16.4 2 22.8 2 19.4 2 19.6 2 18.4 2 18.2 2 20.7
 ;
-ods pdf file="C:\Users\limj\Desktop\KU\°úÁ¦\output2_2.pdf";
+ods pdf file="C:\Users\limj\Desktop\KU\ê³¼ì œ\output2_2.pdf";
 PROC TTEST;
      CLASS group;
      VAR x;
@@ -19,7 +19,7 @@ RUN;
 ods pdf close;
 
 
-/*5¹ø*/
+/*5ë²ˆ*/
 DATA df2;
 INPUT group x @@;
 CARDS;
@@ -28,7 +28,7 @@ CARDS;
 2 19.8 2 9.1 2 30.1 2 15.5 2 10.3 2 11.0 3 10.2 3 11.3 3 11.4 
 3 5.3 3 14.5 3 11.0 3 13.6 3 33.4 3 25.0 3 27.0 3 36.3 3 17.7
 ;
-ods pdf file="C:\Users\limj\Desktop\KU\°úÁ¦\output2_5.pdf";
+ods pdf file="C:\Users\limj\Desktop\KU\ê³¼ì œ\output2_5.pdf";
 PROC UNIVARIATE DATA=df2 NORMAL PLOT;
 BY group;
 VAR x;
@@ -41,7 +41,7 @@ means group / hovtest=levene(type=abs) welch;
 
 run;
 ods pdf close;
-/*7¹ø*/
+/*7ë²ˆ*/
 data df3;
   do exercise="A", "B", "C", "D", "E";
     do diet=1, 2, 3, 4;
@@ -56,7 +56,7 @@ data df3;
     5.1 3.5 2.8 3.3
     10.3 7.7 8.4 9.1
 ;
-ods pdf file="C:\Users\limj\Desktop\KU\°úÁ¦\output2_7.pdf";
+ods pdf file="C:\Users\limj\Desktop\KU\ê³¼ì œ\output2_7.pdf";
 proc anova data=df3;
   class exercise diet;
   model x=exercise diet;
@@ -65,7 +65,7 @@ proc anova data=df3;
 run;
 ods pdf close;
 
-/*9¹ø*/
+/*9ë²ˆ*/
 data df4;
   do age="15-19", "20-24", "25-29";
   do usage=1, 2, 3;
@@ -80,14 +80,14 @@ cards;
 28 32 30 16 24 20 18 22 20
 25 35 30 14 16 15 10 8 12
 run;
-ods pdf file="C:\Users\limj\Desktop\KU\°úÁ¦\output2_9.pdf";
+ods pdf file="C:\Users\limj\Desktop\KU\ê³¼ì œ\output2_9.pdf";
 proc anova data=df4;
      class age usage;
      model x=age usage age*usage;
 run;
 ods pdf close;
 
-/*1¹ø*/
+/*1ë²ˆ*/
 data tab1;
 input danger $ depression $ count;
 cards;
@@ -96,7 +96,7 @@ cards;
 2 1 8 
 2 2 82
 ;
-ods pdf file="C:\Users\limj\Desktop\KU\°úÁ¦\output3_1.pdf";
+ods pdf file="C:\Users\limj\Desktop\KU\ê³¼ì œ\output3_1.pdf";
 
 proc freq;
 tables danger*depression/measures;
@@ -104,7 +104,7 @@ weight count;
 run; 
 ods pdf close;
 
-/*3¹ø*/
+/*3ë²ˆ*/
 data tab2;
 input group relapse $ count;
 cards;
@@ -115,14 +115,14 @@ cards;
 2 yes 2
 2 no 29
 ;
-ods pdf file="C:\Users\limj\Desktop\KU\°úÁ¦\output3_3.pdf";
+ods pdf file="C:\Users\limj\Desktop\KU\ê³¼ì œ\output3_3.pdf";
 proc freq data=tab2;
 weight count;
 tables group*relapse/chisq;
 run;
 ods pdf close;
 
-/*6¹ø*/
+/*6ë²ˆ*/
 data tab3;
 input group glasses $ count;
 cards;
@@ -131,7 +131,7 @@ cards;
 1 yes 8
 1 no 2
 ;
-ods pdf file="C:\Users\limj\Desktop\KU\°úÁ¦\output3_6.pdf";
+ods pdf file="C:\Users\limj\Desktop\KU\ê³¼ì œ\output3_6.pdf";
 
 proc freq data=tab3;
 weight count;
@@ -139,7 +139,7 @@ tables group*glasses/exact;
 run;
 ods pdf close;
 
-/*7¹ø*/
+/*7ë²ˆ*/
 data tab4;
 input first $ second $ count @@;
 cards;
@@ -148,7 +148,7 @@ pos neg 150
 neg pos 86
 neg neg 570
 ;
-ods pdf file="C:\Users\limj\Desktop\KU\°úÁ¦\output3_7.pdf";
+ods pdf file="C:\Users\limj\Desktop\KU\ê³¼ì œ\output3_7.pdf";
 ods select McNemarsTest;
 proc freq order=data;
 weight count;
@@ -156,7 +156,7 @@ tables first*second/agree;
 run;
 ods pdf close;
 
-/*8¹ø*/
+/*8ë²ˆ*/
 data tab5;
 input severity $ sex $ survival $ count @@;
 cards;
@@ -169,14 +169,14 @@ cards;
 3 male dead 17 3 male alive 16
 3 female dead 0 3 female alive 4
 ;
-ods pdf file="C:\Users\limj\Desktop\KU\°úÁ¦\output3_8.pdf";
+ods pdf file="C:\Users\limj\Desktop\KU\ê³¼ì œ\output3_8.pdf";
 proc freq;
 weight count;
 tables severity*sex*survival/CMH NOROW NOCOL;
 run;
 ods pdf close;
 
-/*9¹ø*/
+/*9ë²ˆ*/
 data tab6;
 input test $ disease $ count;
 cards;
@@ -185,7 +185,7 @@ cards;
 1 0 80
 1 1 302
 ;
-ods pdf file="C:\Users\limj\Desktop\KU\°úÁ¦\output3_9.pdf";
+ods pdf file="C:\Users\limj\Desktop\KU\ê³¼ì œ\output3_9.pdf";
 proc sort data=tab6;
 by descending test descending disease;
 run;
