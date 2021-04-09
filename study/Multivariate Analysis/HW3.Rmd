@@ -1,0 +1,145 @@
+---
+title: |
+  | \LARGE HW 3
+author: |
+  | \large \rm 임효진
+date: |
+  | \rm \today
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+mainfont: NanumBarunGothic
+fontsize: 11pt
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+# 1
+## (a)
+```{r}
+cov=matrix(c(5, 2, 2, 2), nrow = 2)
+eigen(cov)
+
+a1=eigen(cov)$vectors[, 1]
+a2=eigen(cov)$vectors[, 2]
+
+# The principle component of y1 is t(a1)%*%x and y2 is t(a2)%*%x. 
+```
+ 
+## (b)
+```{r}
+6/(1+6)
+```
+
+## (c)
+```{r}
+cor=cov2cor(cov)
+eigen(cor)
+
+b1=eigen(cor)$vectors[, 1]
+b2=eigen(cor)$vectors[, 2]
+
+# The principle component of y1 is t(b1)%*%x and y2 is t(b2)%*%x. 
+
+1.6324555/(1.6324555+0.3675445)
+```
+
+## (d)
+The components obtained from the covariance matrix are different from that obtained from the correlation matrix.
+
+# 2
+## (a)
+```{r}
+s=matrix(0, 6, 6)
+diag(s)=c(3266, 722, 179, 475, 10, 21)
+s[lower.tri(s)]=c(1344, 732, 1176, 163, 238,
+                      324, 537, 80, 118,
+                      281, 39, 57, 
+                      64, 95, 
+                      14)
+s[upper.tri(s, diag=F)]=t(s)[upper.tri(s, diag = F)]
+
+eigen(s)
+
+eigen(s)$values[1]/sum(diag(s))
+```
+The data can be effectively summarized by one principal component.
+
+## (b)
+```{r}
+r=cov2cor(s)
+
+eigen(r)
+
+eigen(r)$values[1]/sum(diag(r))
+```
+The data can be effectively summarized by one principal component.
+
+## (c)
+From both analysis we can conclude that the data can be summarized by the first principal component. Analyzing with the covariance matrix though, the principal component depend upon the arbitrary choice of the units while the correlation matrix assumes that the variables are equally important.
+
+# 3
+## (a)
+```{r}
+stock=read.table("C:/Users/limj/Downloads/stock.dat")
+```
+The correlation matrix will be selected for this analysis to treat all variables equally.
+
+## (b)
+```{r}
+pca=prcomp(stock, center = T, scale = T)
+
+pca$rotation
+```
+
+## (c)
+```{r}
+summary(pca)
+screeplot(pca, type="l")
+```
+The proportion explained by the first two principal components is equal to 0.7689 which implies that the first two components convey about 77% of the infomation.
+
+## (d)
+Yes.
+
+## (e)
+```{r}
+plot(pca$x[,1], pca$x[,2], xlab="PC1",
+     ylab="PC2", type="n", lwd=2)
+text(pca$x[,1], pca$x[,2], labels=row.names(stock),
+     col="blue",cex=.5,lwd=2)
+```
+
+# 4
+## (a)
+```{r}
+air=read.table("C:/Users/limj/Downloads/airpollution.dat", header = T)
+```
+
+Since the variables have different scales and values, it is efficient to use the correlation matrix to apply PCA.
+
+## (b)
+```{r}
+pca=prcomp(air, center = T, scale = T)
+
+pca$rotation
+```
+
+## (c)
+```{r}
+summary(pca)
+screeplot(pca, type="l")
+```
+Choosing four principal components is appropriate to summarize this data.
+
+## (d)
+The first four principal components conveys 80% of the data.
+
+## (e)
+Yes.
