@@ -1,0 +1,316 @@
+---
+title: |
+  | \LARGE HW 1
+author: |
+  | \large \rm 임효진
+date: |
+  | \rm \today
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+mainfont: NanumBarunGothic
+fontsize: 11pt
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+# 1
+## (a)
+```{r}
+cdf=function(x){
+  sum=x
+  temp=x
+  k=1
+  while(abs(temp)>.Machine$double.eps){
+    temp=(-1)^k*x^(2*k+1)/(factorial(k)*2^k*(2*k+1))
+    sum=sum+temp
+    k=k+1
+  }
+  return((1/sqrt(2*pi))*sum)
+}
+
+cdf(1)+0.5
+pnorm(1)
+
+0.5+cdf(-1)
+pnorm(-1)
+```
+
+## (b)
+```{r}
+library(dplyr)
+library(tidyverse)
+
+g=function(x, n){
+  a=sqrt(2*pi*n/2)*(n/2/exp(1))^(n/2)
+  b=(n*pi)^(1/2)
+  c=sqrt(2*pi*(n-1)/2)*((n-1)/2/exp(1))^((n-1)/2)
+  d=(1+(x^2)/n)^(-(n+1)/2)
+  
+  (a*d)/(b*c)
+}
+x=seq(-4, 4, by=0.1)
+
+df=as.data.frame(sapply(1:40, function(n) g(x, n)))
+df %>% mutate(X=x) %>% 
+  gather(key, value, 1:40) %>% 
+  ggplot(aes(X, value, col=key))+
+  geom_line()
+
+plot(x, g(x, 40), xlab="x", 
+     ylab=expression(g(x)), col="red", lwd=2, type="l")
+lines(x, dnorm(x), col="blue", type="p")
+```
+ We can see that as n increases the distribution gets closer to the standard normal distribution.
+
+
+# 2
+```{r}
+library(dplyr)
+seqTail=function(n){
+  run=rle(rbinom(n, size=1, prob=0.5))
+  x1=run$values
+  x2=run$lengths
+  x=data.frame(x1, x2)
+  x %>% filter(x1==1) %>% max(x2)
+}
+
+sim=replicate(10^3, seqTail(30))
+table(sim)
+plot(table(sim)/10^3)
+```
+
+# 3
+##(a)
+$P(A_1)=P(A_2)=P(A_3)$
+
+```{r}
+round(choose(40, 10)/choose(60, 10), 6)
+```
+
+## (b)
+$P(A_1)\cap P(A_2)=P(A_1)\cap P(A_3)=P(A_2)\cap P(A_3)$
+
+```{r}
+round(choose(20, 10)/choose(60, 10), 6)
+```
+
+## (c)
+```{r}
+round(3*(choose(40, 10)/choose(60, 10))-
+  3*(choose(20, 10)/choose(60, 10)), 6)
+```
+
+##(d)
+```{r}
+ball=function(){
+  choose=sample(1:3, 10, replace = T)
+  res=0
+  if(length(unique(choose))!=3){
+    res=1
+  } 
+  return(res)
+}
+
+sim=replicate(10^3, ball())
+mean(sim)
+```
+
+
+# 4
+##(a)
+```{r}
+aWin=sample(c(-1, 1), size=1000, replace = T)
+bWin=0-aWin
+
+m=rbind(aWin, bWin)
+m[, 1:10]
+```
+
+## (b)
+```{r}
+# using for loop
+system.time({
+  cumA=numeric(10^3)
+  cumA[1]=aWin[1]
+  for(i in 2:10^3){
+    cumA[i]=cumA[i-1]+aWin[i]
+  }
+})
+cumA[1:10]
+
+# using built-in function
+system.time({cumsum(aWin)})
+cumsum(aWin)[1:10]
+```
+
+## (c)
+```{r}
+# using for loop
+system.time({
+  cumB=numeric(10^3)
+  cumB[1]=bWin[1]
+  for(i in 2:10^3){
+    cumB[i]=cumB[i-1]+bWin[i]
+  }
+  
+  b=cumB[1]
+  for(i in 2:10^3){
+    if(cumB[i]>b){
+      b=cumB[i]
+    }
+  }
+})
+b
+
+# using built-in function
+system.time(max(cumsum(bWin)))
+max(cumsum(bWin))
+```
+
+# 5
+## (a)
+```{r}
+x=vector()
+n=1L
+for(i in 1:1750){
+    if(i%%2!=0&i%%3!=0&i%%7!=0){
+    x[n]=i
+    n=n+1
+    }
+}
+h=matrix(x, 100, 5, byrow = F)
+
+library(psych)
+a1=apply(h, 1, geometric.mean)
+a1
+```
+
+## (b)
+```{r}
+a2=apply(h, 1, harmonic.mean)
+a2
+
+a2<=a1
+```
+
+
+# 6
+## (a)
+```{r}
+pbday=function(n, x){
+  temp=lfactorial(365)+(n-x)*log(365-x)-
+    lfactorial(365-x)-n*log(365)
+  return(exp(temp))
+}
+
+nstudents=1:74
+prob=pbday(75, nstudents)
+plot(nstudents, prob, xlab="Number of Students", 
+     ylab=expression(P(A)), col="red", lwd=2)
+```
+
+## (b)
+```{r}
+meanPbday=function(n){
+  x=c(1:n)
+  sum=sum(x*(pbday(n,(x-1))-pbday(n,x)))
+  return(sum)
+}
+
+nstudents=25:100
+temp=numeric(length(nstudents))
+for (i in nstudents){
+  temp[i-24]=meanPbday(i)
+}
+
+plot(nstudents, temp, xlab="Number of Students", 
+     ylab=expression(Exp(A)), col="red", lwd=2)
+```
+
+## (c)
+```{r}
+simPbday=function(n){
+  temp=sample(365, n, replace = T)
+  idx=0
+  for(i in 2:n){
+    if(temp[i]%in%temp[1:i-1]){
+      idx=i
+      break
+    }
+  }
+  return(idx)
+}
+
+sim=replicate(10^3, simPbday(75))
+mean(sim)
+```
+
+
+# 7
+```{r}
+LCG=function(n, m, a, c, x0){
+  x=numeric(n)
+  xn=x0
+  for(i in 1:n){
+    xn=(a*xn+c)%%m
+    x[i]=xn
+  }
+  return(x)
+}
+
+num=LCG(10^5, 2^32,  1103515245, 12345, 1)
+length(unique(num))
+
+hist(num, nclass=30)
+```
+
+## (b)
+```{r}
+unifNum=runif(10^5)
+length(unique(unifNum))
+
+hist(unifNum, nclass=30)
+```
+
+## (c)
+```{r}
+# 15595 unique values are achieved from LCG.
+
+expUnique=function(n, m, a, c, x0){
+  num=LCG(n, m, a, c, x0)
+  return(length(unique(num)))
+}
+
+sim=replicate(10, 
+              expUnique(10^5, 2^32,  1103515245, 12345, 1))
+mean(sim)
+```
+
+# 8
+## (a)
+```{r}
+returnPascal=function(n){
+  return(choose(n, 0:n))
+}
+```
+
+##(b)
+```{r}
+cnt=0
+plot(0, 0, type="n", xlim=c(-12, 12), ylim=c(1, 12), axes = F,
+     xlab = "", ylab = "")
+for(i in 1:12){
+  for(j in 1:i){
+    text(-(i+1)+2*j, (12+1)-i, label=returnPascal(cnt)[j])
+  }
+  cnt=cnt+1
+}
+```
+
