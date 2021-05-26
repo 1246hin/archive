@@ -1,0 +1,198 @@
+---
+title: |
+  | \LARGE HW 4
+author: |
+  | \large \rm 2019150432 임효진
+date: |
+  | \rm \today
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+mainfont: NanumBarunGothic
+fontsize: 11pt
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=10, fig.height=10)
+```
+
+# 1
+```{r}
+library(psych)
+
+cor=matrix(rep(1, 36), nrow = 6)
+cor[lower.tri(cor)]=c(0.505, 0.569, 0.602, 0.621, 0.603,
+                      0.422, 0.467, 0.482, 0.450, 0.926,
+                      0.877, 0.878, 0.874, 0.894, 0.937)
+cor[upper.tri(cor, diag=F)]=t(cor)[upper.tri(cor, diag = F)]
+
+facMl=fac(cor, nfactors = 2, fm="ml", rotate = "none")
+facMl
+```
+
+## (a)
+```{r}
+facMl$communalities
+```
+
+## (b)
+```{r}
+facMl$uniquenesses
+```
+
+## (c)
+```{r}
+facMl$loadings
+```
+The empty space implies that the loadings are less than 0.1. From the loadings above, we can interpret the correlation between skull breadth and F2 is less than 0.1.
+
+## (d)
+```{r}
+Lambda <- facMl$loadings
+Psi <- diag(facMl$uniquenesses)
+S <- facMl$r
+Sigma <- Lambda %*% t(Lambda) + Psi
+round(S - Sigma, 6)
+```
+The numbers are close to 0 which means that the factor model is a good representation of the manifest variable.
+
+- Repeat with Varimax Rotation
+```{r}
+facM2=fac(cor, nfactors = 2, fm="ml", rotate = "varimax")
+facM2
+
+facM2$communalities
+facM2$uniquenesses
+```
+
+```{r}
+facM2$loadings
+```
+From the loadings above, we can interpret the correlation between skull breadth and F2 is 0.375.
+
+```{r}
+Lambda <- facM2$loadings
+Psi <- diag(facM2$uniquenesses)
+S <- facM2$r
+Sigma <- Lambda %*% t(Lambda) + Psi
+round(S - Sigma, 6)
+
+```
+The residual matrix calculated with varimax rotation is identical with the former one.
+
+# 2
+## (a)
+```{r}
+f1=c(0.789, 0.834, 0.740, 0.586, 0.676, 0.654, 0.641,
+     0.629, 0.564, 0.808)
+f2=c(-0.403, -0.234, -0.134, -0.185, -0.248, 0.440, 0.534,
+     0.651, 0.354, 0.714)
+f=cbind(f1, f2)
+rownames(f)=c("x1", "x2", "x3", "x4", "x5", 
+              "x6", "x7", "x8", "x9", "x10")
+
+plot(f1, f2, xlab="F1", ylab="F2", xlim=c(-1, 1), 
+     ylim=c(-1, 1), type="n")
+text(f1, f2, labels = rownames(f), cex=0.8)
+abline(h=0, v=0)
+abline(coef=c(0, -0.403/0.789), col="red")
+abline(coef=c(0, 0.789/0.403), col="red")
+
+# angle of rotation
+atan2(0.403, 0.789)*180/pi
+```
+When using the coordinates of x1 to calculate the angle of roatation, the minimum angle needed to remove those that are negatve is approximately 27.057.
+
+## (b)
+From the above graph we can group x1, x2, x3, x4, x5 associated with factor 1 and the others associated with factor 2.
+
+# 3
+```{r}
+cor=matrix(c(1, 1/3, 1/3, 1/3, 1, 1/10, 1/3, 1/10, 1),
+           nrow = 3, byrow = T)
+
+fac1=fac(cor, nfactors = 1, fm="ml", rotate = "none")
+fac1
+```
+The specific variances of the second and third vairable are significantly large. The variance implies that about 89% of the variability can not be explained by the factors. Therefore using only one factor is not adequate.
+
+# 4
+## (a)
+```{r}
+sales=read.table("sales.dat", header = T)
+cor=cor(sales)
+
+fac2=fac(cor, nfactors = 2, fm="ml", rotate = "varimax")
+
+# loadings
+fac2$loadings
+
+# communalities
+fac2$communalities
+
+# specific variance
+fac2$uniquenesses
+
+# sigma
+Lambda2=fac2$loadings
+Psi2=diag(fac2$uniquenesses)
+Sigma2=Lambda2 %*% t(Lambda2) + Psi2
+
+Sigma2
+```
+From the loadings we can suggest that variables can be grouped by x4, x5 with factor 1 and the others with factor 2. Thus factor 1 implies ability of creativity and factor 2 implies sales skills.
+
+## (b)
+```{r}
+fac3=fac(cor, nfactors = 3, fm="ml", rotate = "varimax")
+
+# loadings
+fac3$loadings
+
+# communalities
+fac3$communalities
+
+# specific variance
+fac3$uniquenesses
+
+# sigma
+Lambda3=fac3$loadings
+Psi3=diag(fac3$uniquenesses)
+Sigma3=Lambda3 %*% t(Lambda3) + Psi3
+
+Sigma3
+```
+From the loadins we can suggest that variables can be grouped by x4 with factor 1, x6 with factor 2 and the others with factor 3. Thus factor 1 implies creativity, factor 2 implies abstract reasoning and factor 3 implies sales skills.
+
+## (c)
+```{r}
+# residual matrix of the first model
+round(cor - Sigma2, 6)
+
+# residual matrix of the second model
+round(cor - Sigma3, 6)
+
+```
+The model using three-factor solution has a residual matrix close to 0 compared to the one with two-factor solution. Therefore three factor seems to be an adequate choice.
+
+## (d)
+```{r}
+fac2$dof
+fac2$objective
+pchisq(2.63, 8)
+
+fac3$dof
+fac3$objective
+pchisq(1.42, 3)
+```
+
+$U=n^\prime min(F)$ is not significant when 3-factor model is chosen which implies that using 3 factors is more adequate.
+
+## (e)
+```{r}
+factor.scores(sales, fac2)$scores
+```
