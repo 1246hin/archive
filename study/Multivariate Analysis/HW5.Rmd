@@ -1,0 +1,144 @@
+---
+title: |
+  | \LARGE HW5
+author: |
+  | \large \rm 2019150432 임효진
+date: |
+  | \rm \today
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+mainfont: NanumBarunGothic
+fontsize: 11pt
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1
+## (a)
+```{r}
+library(stats)
+dat1=matrix(c(2, 2, 4, 5, 6, 6, 7, 7, 6, 4), ncol=2, byrow = T)
+dist(dat1 , diag = T)
+```
+
+## (b)
+```{r}
+hclust(dist(dat1),method="single")
+plot(hclust(dist(dat1),method="single"),
+     xlab=NA,ylab="Distance",
+     main="Single linkage dendrogram")
+```
+
+## (c)
+```{r}
+hclust(dist(dat1),method="complete")
+plot(hclust(dist(dat1),method="complete"),
+     xlab=NA,ylab="Distance",
+     main="Complete linkage dendrogram")
+
+```
+
+## (d)
+```{r}
+hclust(dist(dat1),method="average")
+plot(hclust(dist(dat1),method="average"),
+     xlab=NA,ylab="Distance",
+     main="Group Average dendrogram")
+
+```
+
+## (e)
+Partitions used with complete linkage and group average are the same but the distances usd to merge groups are different. While complete linkage and group average clustering merged (3, 4) and (2, 5) and (2, 3, 4, 5) sequentially single linkage clustering merged (3, 4) and (3, 4, 5) and (2, 3, 4, 5) in this order.
+
+# 2
+## (a)
+```{r}
+cor=matrix(rep(1, 25), nrow=5)
+cor[lower.tri(cor)]=c(0.39, 0.51, 0.58, 0.46, 0.44, 0.38, 0.52,
+                      0.60, 0.43, 0.32)
+cor[upper.tri(cor, diag = F)]=t(cor)[upper.tri(cor, diag = F)]
+dist=as.dist(1-cor)
+
+hclust(dist,method="single")
+plot(hclust(dist,method="single"),
+     xlab=NA,ylab="Distance",
+     main="Single linkage dendrogram")
+```
+
+## (b)
+```{r}
+hclust(dist,method="complete")
+plot(hclust(dist,method="complete"),
+     xlab=NA,ylab="Distance",
+     main="Complete linkage dendrogram")
+
+```
+
+## (c)
+```{r}
+hclust(dist,method="average")
+plot(hclust(dist,method="average"),
+     xlab=NA,ylab="Distance",
+     main="Group Average dendrogram")
+
+```
+
+## (d)
+The partitions are the same when using single linkage, complete linkage group average clustering, but the distances used to merge groups are different.
+
+# 3
+## (a)
+```{r}
+dat3=matrix(c(5, 4, 1, 3, -1, 1, 3, 1), ncol=2, byrow = T)
+
+km1=kmeans(dat3, matrix(c(3, 3.5, 1, 1), ncol=2, byrow = T))
+km1
+```
+
+## (b)
+```{r}
+km2=kmeans(dat3, matrix(c(4, 2.5, 0, 2), ncol=2, byrow = T))
+km2
+
+plot(dat3, col=km2$cluster, cex=2, pch=1, lwd=2)
+points(km2$centers, col=1:2, pch=8)
+```
+
+The clustering are the same. Observation 1 and 4 form one cluster and observation 2 and 3 form another. The within cluset SS is 6.5 and 4.0 respectively and the ratio of the between SS and total SS is 60.7 which indicates that the goodness of the classification is not that bad.
+
+# 4
+## (a)
+```{r}
+dat4=read.table("C:/Users/limj/Downloads/cereal_r.dat",
+                header=T)
+hclust(dist(dat4[, -c(1, 2)]), method="single")
+plot(hclust(dist(dat4[, -c(1, 2)]), method="single"),
+     labels=dat4[,1], xlab=NA, ylab="Distance",
+     main="Single linkage dendrogram")
+
+hclust(dist(dat4[, -c(1, 2)]), method="complete")
+plot(hclust(dist(dat4[, -c(1, 2)]), method="complete"),
+     labels=dat4[,1], xlab=NA, ylab="Distance",
+     main="Complete linkage dendrogram")
+
+hclust(dist(dat4[, -c(1, 2)]), method="average")
+plot(hclust(dist(dat4[, -c(1, 2)]), method="average"),
+     labels=dat4[,1], xlab=NA, ylab="Distance",
+     main="Group Average dendrogram")
+```
+The partitions are the same but the distance but the distances used to merge groups are different.
+
+## (b)
+```{r}
+km3=kmeans(dat4[, -c(1, 2)], 3)
+km3
+```
+
+3 clusters formed from single linkage, complete linkage, group average, k-means clustering are the same.
